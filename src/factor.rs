@@ -1,10 +1,10 @@
-use crate::express::Express;
 use crate::Digit;
+use crate::item::Item;
 #[derive(PartialEq, Debug)]
 pub enum Factor {
-    Exprect,
+    _Exprect,
     Digit(Digit),
-    PackExp(Box<Express>),
+    _PackItem(Box<Item>),
 }
 
 impl Factor {
