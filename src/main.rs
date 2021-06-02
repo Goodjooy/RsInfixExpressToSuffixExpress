@@ -1,3 +1,4 @@
+use crate::factor::Factor;
 use crate::item::Item;
 use crate::status::StatusMachin;
 
@@ -17,7 +18,7 @@ trait GerneratExp {
 
 fn main() {
     println!("Hello, world!");
-    let exp = "1+23-22+(12-1+(12-11+(-22)))";
+    let exp = "(1+23)*(2/11)";
     let status: StatusMachin = StatusMachin::new();
     let (r, _) = anayles(&mut exp.chars(), status);
     println!("{:#?}", r)
@@ -39,11 +40,18 @@ fn anayles(in_str: &mut std::str::Chars, status: StatusMachin) -> (Option<Expres
                     }
                     status::Status::Add => final_express = Express::add_sign(final_express),
                     status::Status::Min => final_express = Express::min_sign(final_express),
-                    status::Status::Produce => todo!(),
-                    status::Status::Divide => todo!(),
+                    status::Status::Produce => {
+                        final_express = Item::pack_opt(final_express, |item| -> Item {
+                            Item::produce_sign(item)
+                        })
+                    }
+                    status::Status::Divide => {
+                        final_express = Item::pack_opt(final_express, |item| -> Item {
+                            Item::divide_sign(item)
+                        })
+                    }
                     status::Status::SyntaxError => break,
                     status::Status::SubProcess => {
-
                         let new_exp = match anayles(str_iter, status) {
                             (Some(exp), s) => {
                                 status = s;
@@ -60,7 +68,18 @@ fn anayles(in_str: &mut std::str::Chars, status: StatusMachin) -> (Option<Expres
                             Express::Nil => Express::Item(fac_ex),
                             Express::Add(exp, _fac) => Express::Add(exp, fac_ex),
                             Express::Min(exp, _fac) => Express::Min(exp, fac_ex),
-                            Express::Item(fac) => Express::Item(fac),
+                            Express::Item(fac) => Express::Item({
+                                match fac {
+                                    Item::Nil => Item::Factor(Factor::PackItem(Box::new(fac_ex))),
+                                    Item::Produce(exp, _f) => {
+                                        Item::Produce(exp, Factor::PackItem(Box::new(fac_ex)))
+                                    }
+                                    Item::Divide(exp, _f) => {
+                                        Item::Divide(exp, Factor::PackItem(Box::new(fac_ex)))
+                                    }
+                                    v => v,
+                                }
+                            }),
                         }
                     }
                     status::Status::ExitProcess => return (Some(final_express), status),

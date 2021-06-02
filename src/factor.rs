@@ -2,9 +2,9 @@ use crate::Digit;
 use crate::item::Item;
 #[derive(PartialEq, Debug)]
 pub enum Factor {
-    _Exprect,
+    Expect,
     Digit(Digit),
-    _PackItem(Box<Item>),
+    PackItem(Box<Item>),
 }
 
 impl Factor {
