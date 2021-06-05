@@ -11,6 +11,9 @@ mod factor;
 mod item;
 mod status;
 
+mod lexical;
+mod syntax;
+
 trait GerneratExp {
     fn get_sign();
     fn do_generate(char_iter: std::str::Chars);
@@ -18,7 +21,7 @@ trait GerneratExp {
 
 fn main() {
     println!("Hello, world!");
-    let exp = "(1+23)*(2/11)";
+    let exp = "(1+23)*(2/11)/(-3)";
     let status: StatusMachin = StatusMachin::new();
     let (r, _) = anayles(&mut exp.chars(), status);
     println!("{:#?}", r)
