@@ -1,4 +1,4 @@
-use super::LexicalIter;
+use super::{Lexical, LexicalData, LexicalDataIter, LexicalIter};
 
 impl<'a> Iterator for LexicalIter<'a> {
     type Item = char;
@@ -13,7 +13,6 @@ impl<'a> LexicalIter<'a> {
     pub fn new(data: &'a str) -> LexicalIter<'a> {
         let mut iter = LexicalIter {
             preview: '\0',
-            data: data.to_string(),
             iter: data.chars(),
         };
         iter.next();
@@ -26,5 +25,31 @@ impl<'a> LexicalIter<'a> {
         } else {
             Some(self.preview)
         }
+    }
+}
+
+impl Iterator for LexicalDataIter {
+    type Item = LexicalData;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let v = self.data.get(self.index)?;
+        self.index += 1;
+        Some(v.clone())
+    }
+}
+impl LexicalDataIter {
+    pub fn preview(&self) -> Option<LexicalData> {
+        Some(self.data.get(self.index)?.clone())
+    }
+}
+
+impl IntoIterator for Lexical {
+    type Item = LexicalData;
+
+    type IntoIter = LexicalDataIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let data = self.res_list;
+        LexicalDataIter { data, index: 0 }
     }
 }

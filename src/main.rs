@@ -1,9 +1,11 @@
+use crate::lexical::{Lexical,};
 use crate::factor::Factor;
 use crate::item::Item;
 use crate::status::StatusMachin;
 
 use crate::digit::Digit;
 use crate::express::Express;
+use crate::syntax::Expr;
 
 mod digit;
 mod express;
@@ -14,17 +16,22 @@ mod status;
 mod lexical;
 mod syntax;
 
-trait GerneratExp {
-    fn get_sign();
-    fn do_generate(char_iter: std::str::Chars);
-}
 
-fn main() {
+fn main() ->Result<(),Box<dyn std::error::Error>>{
     println!("Hello, world!");
     let exp = "(1+23)*(2/11)/(-3)";
-    let status: StatusMachin = StatusMachin::new();
-    let (r, _) = anayles(&mut exp.chars(), status);
-    println!("{:#?}", r)
+
+    let mut lexical=Lexical::init();
+    lexical.do_lexical(exp);
+
+    println!("{:#?}",lexical);
+
+    let expr=Expr::read_expr(&mut lexical.into_iter());
+    //let status: StatusMachin = StatusMachin::new();
+    //let (r, _) = anayles(&mut exp.chars(), status);
+    println!("{:#?}", expr);
+
+    Ok(())
 }
 
 fn anayles(in_str: &mut std::str::Chars, status: StatusMachin) -> (Option<Express>, StatusMachin) {

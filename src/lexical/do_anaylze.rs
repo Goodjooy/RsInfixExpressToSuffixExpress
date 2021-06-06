@@ -6,6 +6,10 @@ impl Lexical {
     fn check_keyword(&self, key: &String) -> Option<LexicalData> {
         Some((self.keyword.get(key)?).clone())
     }
+    fn check_vaild_sign(&self, key: &String) -> bool {
+        self.sign_set.contains(key)
+    }
+
     pub fn do_lexical(&mut self, in_data: &'static str) -> Option<Self> {
         let mut iter = LexicalIter::new(in_data);
 
@@ -23,7 +27,9 @@ impl Lexical {
                         self.check_keyword(s)
                     })?)
             } else {
-                self.res_list.push(load_sign(ch, &mut iter)?);
+                self.res_list.push(load_sign(ch, &mut iter, |s| -> bool {
+                    self.check_vaild_sign(s)
+                })?);
             }
         }
     }
@@ -53,13 +59,13 @@ fn digit_read(ch: char, iter: &mut LexicalIter) -> Option<LexicalData> {
                         let n = pre_ch.to_digit(10)?;
                         number = number * 10 + n;
                         f_number.push(pre_ch);
-                    }else{
+                    } else {
                         break;
                     }
                 } else {
                     if pre_ch.is_digit(10) {
                         f_number.push(pre_ch);
-                    }else{
+                    } else {
                         break;
                     }
                 }
@@ -98,28 +104,30 @@ where
     check_keyword(&word).or_else(|| Some(LexicalData::Var(word)))
 }
 
-fn load_sign(ch: char, iter: &mut LexicalIter) -> Option<LexicalData> {
+fn load_sign<F>(ch: char, iter: &mut LexicalIter, check: F) -> Option<LexicalData>
+where
+    F: Fn(&String) -> bool,
+{
     let mut sign = String::from(ch);
-    //{,},[,],(,),/,//,+,-,*,:,=,^ | || && .
-    if ch.is_ascii_punctuation() {
-        if SINGLE_SIGNS.contains(&&sign[..]) {
-            Some(LexicalData::Sign(sign))
-        } else if EXCPT_SIGNS.contains(&&sign[..]) {
-            None
-        } else {
-            let pre_ch = iter.get_preview()?;
-            if pre_ch.is_ascii_punctuation() {
-                iter.next()?;
-                sign.push(pre_ch);
-                Some(LexicalData::Sign(sign))
-            } else {
-                Some(LexicalData::Sign(sign))
-            }
-        }
+    match  iter.get_preview(){
+        Some(s) => {
+            sign.push(s)
+        },
+        None => {},
+    }
+    //valid sign add
+    if check(&sign) {
+        Some(LexicalData::Sign(sign))
     } else {
-        None
+        sign.pop()?;
+        if check(&sign) {
+            Some(LexicalData::Sign(sign))
+        } else {
+            None
+        }
     }
 }
+
 fn clear_comment(iter: &mut LexicalIter) -> Option<()> {
     let sign = iter.get_preview()?;
     if sign == '/' {
@@ -186,14 +194,15 @@ mod test {
     #[test]
     fn test_load_sign() {
         let mut iter = LexicalIter::new("+={11+22}");
+        let temp = |s: &String| -> bool { s == "+=" || s == "{" };
         let ch = iter.next().unwrap();
         assert_eq!(
-            load_sign(ch, &mut iter).unwrap(),
+            load_sign(ch, &mut iter, temp).unwrap(),
             LexicalData::Sign("+=".to_string())
         );
         let ch = iter.next().unwrap();
         assert_eq!(
-            load_sign(ch, &mut iter).unwrap(),
+            load_sign(ch, &mut iter, temp).unwrap(),
             LexicalData::Sign("{".to_string())
         )
     }
