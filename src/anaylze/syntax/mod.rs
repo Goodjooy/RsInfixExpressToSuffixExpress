@@ -2,6 +2,7 @@ mod expr;
 mod factor;
 mod item;
 mod display;
+mod to_surfix;
 
 pub use crate::anaylze::lexical::{LexicalData, LexicalDataIter};
 use std::collections::HashMap;
@@ -51,4 +52,19 @@ pub enum Factor {
 enum OptExpr {
     Nil,
     Expr(Expr),
+}
+
+#[derive(Debug,PartialEq, PartialOrd)]
+pub enum Final {
+    Digit(i64),
+    Add,
+    Min,
+
+    Pro,
+    Div
+
+}
+
+pub trait ToSurfix {
+    fn to_surfix(self)->Vec<Final>;
 }

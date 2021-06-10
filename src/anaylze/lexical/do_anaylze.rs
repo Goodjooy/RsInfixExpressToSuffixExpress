@@ -11,11 +11,12 @@ impl Lexical {
         self.sign_set.contains(key)
     }
 
-    pub fn do_lexical(&mut self, in_data: &'static str) -> Option<Self> {
+    pub fn do_lexical(&mut self, in_data: & str) -> Option<Self> {
         let mut iter = LexicalIter::new(in_data);
 
         loop {
             clear_space(&mut iter)?;
+            clear_comment(&mut iter)?;
             let ch = iter.next()?;
             //数字开头
             if ch.is_digit(10) {

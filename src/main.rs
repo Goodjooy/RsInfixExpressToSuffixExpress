@@ -1,9 +1,12 @@
-use crate::anaylze::syntax::Expr;
+use anaylze::syntax::Final;
+
 use crate::anaylze::lexical::Lexical;
+use crate::anaylze::syntax::Expr;
 use crate::factor::Factor;
 use crate::item::Item;
 use crate::status::StatusMachin;
 
+use crate::anaylze::syntax::ToSurfix;
 use crate::digit::Digit;
 use crate::express::Express;
 
@@ -15,23 +18,57 @@ mod status;
 
 mod anaylze;
 
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("Enter Expression: ");
+    let mut exp=String::new();
+    
+    std::io::stdin().read_line(&mut exp)?;
 
-fn main() ->Result<(),Box<dyn std::error::Error>>{
-    println!("Hello, world!");
-    let exp = "(1+23)*(2/11)/(-3)";
 
-    let mut lexical=Lexical::init();
-    lexical.do_lexical(exp);
+    let mut lexical = Lexical::init();
+    lexical.do_lexical(&exp[..]);
 
-    //println!("{:#?}",lexical);
 
-    let expr=Expr::read_expr(&mut lexical.into_iter());
-    //let status: StatusMachin = StatusMachin::new();
-    //let (r, _) = anayles(&mut exp.chars(), status);
-    //println!("{:#?}", expr);
-    println!("{}",exp);
-    println!("{}",expr.unwrap());
+    let expr = Expr::read_expr(&mut lexical.into_iter())
+    .ok_or("Bad Express")?;
+    let res = expr.to_surfix();
+    println!("Orgin: {}", exp);
+    println!("Surfix: {:?}", &res);
+    println!("Result: {}", work(res).unwrap());
+
     Ok(())
+}
+
+fn work(data: Vec<Final>) -> Option<i64> {
+    let mut stack = Vec::new();
+    for d in data {
+        match d {
+            Final::Digit(num) => {
+                stack.push(num);
+            }
+            Final::Add => {
+                let right = stack.pop()?;
+                let left = stack.pop()?;
+                stack.push(left + right);
+            }
+            Final::Min => {
+                let right = stack.pop()?;
+                let left = stack.pop()?;
+                stack.push(left - right);
+            }
+            Final::Pro => {
+                let right = stack.pop()?;
+                let left = stack.pop()?;
+                stack.push(left * right);
+            }
+            Final::Div => {
+                let right = stack.pop()?;
+                let left = stack.pop()?;
+                stack.push(left / right);
+            }
+        }
+    }
+    stack.pop()
 }
 
 fn anayles(in_str: &mut std::str::Chars, status: StatusMachin) -> (Option<Express>, StatusMachin) {
