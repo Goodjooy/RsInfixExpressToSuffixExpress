@@ -1,4 +1,5 @@
-use super::{Lexical, LexicalData, LexicalIter};
+use crate::anaylze::lexical::LexicalIter;
+use super::{Lexical, LexicalData};
 
 const SINGLE_SIGNS: [&str; 9] = ["{", "}", "[", "]", "(", ")", ":", ".", ";"];
 const EXCPT_SIGNS: [&str; 5] = [",", "$", "#", "@", "~"];

@@ -38,6 +38,9 @@ impl Iterator for LexicalDataIter {
     }
 }
 impl LexicalDataIter {
+    pub fn new(data: Vec<LexicalData>) -> LexicalDataIter {
+        LexicalDataIter { data, index: 0 }
+    }
     pub fn preview(&self) -> Option<LexicalData> {
         Some(self.data.get(self.index)?.clone())
     }

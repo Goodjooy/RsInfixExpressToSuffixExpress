@@ -1,11 +1,11 @@
-use crate::lexical::{Lexical,};
+use crate::anaylze::syntax::Expr;
+use crate::anaylze::lexical::Lexical;
 use crate::factor::Factor;
 use crate::item::Item;
 use crate::status::StatusMachin;
 
 use crate::digit::Digit;
 use crate::express::Express;
-use crate::syntax::Expr;
 
 mod digit;
 mod express;
@@ -13,8 +13,7 @@ mod factor;
 mod item;
 mod status;
 
-mod lexical;
-mod syntax;
+mod anaylze;
 
 
 fn main() ->Result<(),Box<dyn std::error::Error>>{
@@ -24,13 +23,14 @@ fn main() ->Result<(),Box<dyn std::error::Error>>{
     let mut lexical=Lexical::init();
     lexical.do_lexical(exp);
 
-    println!("{:#?}",lexical);
+    //println!("{:#?}",lexical);
 
     let expr=Expr::read_expr(&mut lexical.into_iter());
     //let status: StatusMachin = StatusMachin::new();
     //let (r, _) = anayles(&mut exp.chars(), status);
-    println!("{:#?}", expr);
-
+    //println!("{:#?}", expr);
+    println!("{}",exp);
+    println!("{}",expr.unwrap());
     Ok(())
 }
 
